@@ -87,19 +87,24 @@ int OnInit()
    rsi_handle = iRSI(_Symbol, PERIOD_CURRENT, rsi_period, PRICE_CLOSE);
    rsi_ma_1_handle = iMA(_Symbol, PERIOD_CURRENT, rsi_ma_1_period,0,MODE_EMA, rsi_handle);
    rsi_ma_2_handle = iMA(_Symbol, PERIOD_CURRENT, rsi_ma_2_period,0,MODE_EMA, rsi_handle);
-  // ChartIndicatorAdd(0, subwindow, rsi_handle);
-  // ChartIndicatorAdd(0, subwindow, rsi_ma_1_handle);
-  // ChartIndicatorAdd(0, subwindow, rsi_ma_2_handle);
+   if (indicatorEnabled) {
+      ChartIndicatorAdd(0, subwindow, rsi_handle);
+      ChartIndicatorAdd(0, subwindow, rsi_ma_1_handle);
+      ChartIndicatorAdd(0, subwindow, rsi_ma_2_handle);
+   }
    
    ma_trend_handle = iMA(_Symbol, PERIOD_CURRENT, ma_trend_period, 0,MODE_SMA,PRICE_CLOSE);
    ma_signal_1_handle = iMA(_Symbol, PERIOD_CURRENT, ma_signal_1_period, 0, MODE_EMA, PRICE_CLOSE);
    ma_signal_2_handle = iMA(_Symbol, PERIOD_CURRENT, ma_signal_2_period, 0, MODE_EMA, PRICE_CLOSE);
    ma_signal_3_handle = iMA(_Symbol, PERIOD_CURRENT, ma_signal_3_period, 0, MODE_EMA, PRICE_CLOSE);
 
-   //ChartIndicatorAdd(0, 0, ma_trend_handle);
-   //ChartIndicatorAdd(0, 0, ma_signal_1_handle);
-   //ChartIndicatorAdd(0, 0, ma_signal_2_handle);
-  // ChartIndicatorAdd(0, 0, ma_signal_3_handle);
+   if (indicatorEnabled) {
+      ChartIndicatorAdd(0, 0, ma_trend_handle);
+      ChartIndicatorAdd(0, 0, ma_signal_1_handle);
+      ChartIndicatorAdd(0, 0, ma_signal_2_handle);
+      ChartIndicatorAdd(0, 0, ma_signal_3_handle);
+   }
+
 
    barTotal = iBars(_Symbol, PERIOD_CURRENT);
 
@@ -175,7 +180,18 @@ int Decide() {
 
 
 void OnDeinit(const int reason) {
-   DeleteIndicators();
+   if (indicatorEnabled) {
+         DeleteIndicators();
+   }
+
+   IndicatorRelease(ma_trend_handle);
+   IndicatorRelease(ma_signal_1_handle);
+   IndicatorRelease(ma_signal_2_handle);
+   IndicatorRelease(ma_signal_3_handle);
+   IndicatorRelease(rsi_ma_1_handle);
+   IndicatorRelease(rsi_ma_2_handle);
+   IndicatorRelease(rsi_handle);
+
    
 }
 
@@ -328,25 +344,17 @@ void MarkCandle(Candle &c) {
 
 void DeleteIndicators() {
    // delete indicator using the indicator handle
-   int num_windows=(int)ChartGetInteger(0,CHART_WINDOWS_TOTAL);
-   
-   for (int window = num_windows-1; window>-1; window--){
-      int numIndicators = ChartIndicatorsTotal(0,window);
-      
-      for(int index=0; index<numIndicators; index++){
-         string name = ChartIndicatorName(0,window,index);
-    
-         int handleOnChart=ChartIndicatorGet(0,window,name);
-         Print("handle found on chart:",handleOnChart);
-         Print("Name:", name);
-         if(!ChartIndicatorDelete(0,window,name)){
-            PrintFormat("Error indicator delete %s. Error: %d",name, GetLastError());
-             
-         }
-         
-         IndicatorRelease(handleOnChart);
-      }
-   }
+      int subwindows=ChartGetInteger(0,CHART_WINDOWS_TOTAL);
+
+      for(int i=subwindows;i>=0;i--)
+        {
+         int indicators=ChartIndicatorsTotal(0,i);
+
+         for(int j=indicators-1; j>=0; j--)
+           {
+            ChartIndicatorDelete(0,i,ChartIndicatorName(0,i,j));
+           }
+        }
 }
 
 

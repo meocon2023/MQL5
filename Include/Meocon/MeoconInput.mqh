@@ -53,3 +53,5 @@ input int   rr                         = 3;    // Risk: Reward ratio (6)
 input int   cancel_order_after_num_candles = 5; // Cancel pending orders after candles
 
 input Strategy  strategy  = S1;
+
+input bool indicatorEnabled = true;
