@@ -1,5 +1,5 @@
 //+------------------------------------------------------------------+
-//|                                                    Constants.mqh |
+//|                                                    DrawUtils.mqh |
 //|                                  Copyright 2023, MetaQuotes Ltd. |
 //|                                             https://www.mql5.com |
 //+------------------------------------------------------------------+
@@ -26,61 +26,14 @@
 // #import
 //+------------------------------------------------------------------+
 
-enum Decision {
-   NONE,
-   BUY,
-   SELL
-};
+void DrawArrowDown(MqlRates &rate) {
+      double h = rate.high;
+      h += h/2000;
+      ObjectCreate(0,"obj_arrow_down" + string(rate.time),OBJ_ARROW_DOWN,0,rate.time, h);
+}
 
-struct Range {
-   double min;
-   double max;
-};
-
-
-enum CandleType {
-   NONE_CANDLE,
-   HAMMER,
-   HANGING_MAN
-};
-
-enum CandleColor {
-   BLUE,
-   RED
-};
-
-struct CandleTypeDef {
-   CandleType candle_type;
-   Range shadow_top_percentage_range;
-   Range shadow_bottom_percentage_range;
-   Range body_percentage_range;
-};
-
-struct CandleStruct {
-   double body;
-   double length;
-   double shadow_top;
-   double shadow_bottom;
-   MqlRates rates;
-   CandleColor candle_color;
-};
-
-struct CandleStick {
-   CandleType candle_type;
-   CandleColor candle_color;
-   double body;
-   double length;
-   double shadow_top;
-   double shadow_bottom;
-   MqlRates rates;
-} ;
-
-
-struct NormalizedCandle {
-   Range body_range;
-   Range length_range;
-};
-
-struct ExecutionData {
-   NormalizedCandle normalized_candle;
-};
+void DrawArrowUp(MqlRates &rate) {
+      double l = rate.low;
+      l -= l/2000;
+      ObjectCreate(0,"obj_arrow_up" + string(rate.time),OBJ_ARROW_UP,0,rate.time, l);
+}

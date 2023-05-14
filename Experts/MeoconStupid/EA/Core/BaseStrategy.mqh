@@ -9,6 +9,7 @@
 
  #include <Arrays\List.mqh>
  #include "Condition.mqh"
+
 class BaseStrategy
   {
 private:
@@ -16,12 +17,20 @@ private:
 protected:
                      BaseCondition *m_buy_condition;
                      BaseCondition *m_sell_condition;
+                     void virtual BuildBuyConditions() {}
+                     void virtual BuildSellCondition() {}
+                     bool m_setup;
 
 public:
                      BaseStrategy(BaseCondition &buy_condition, BaseCondition &sell_condition);
                      BaseStrategy();
                     ~BaseStrategy();
-                     Decision Execute();
+                     Decision Execute(ExecutionData &data);
+                     void virtual Setup() {
+                        BuildBuyConditions();
+                        BuildSellCondition();
+                        m_setup = true;
+                     }
   };
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -34,6 +43,7 @@ BaseStrategy::BaseStrategy(BaseCondition &buy_condition, BaseCondition &sell_con
   
   BaseStrategy::BaseStrategy()
   {
+
   }
   
 //+------------------------------------------------------------------+
@@ -46,11 +56,14 @@ BaseStrategy::~BaseStrategy()
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-Decision BaseStrategy::Execute()
+Decision BaseStrategy::Execute(ExecutionData &data)
   {
-      bool isBuyEligible = m_buy_condition.IsConditionPassed();
+      if (!m_setup) {
+         Setup();
+      }
+      bool isBuyEligible = m_buy_condition.IsConditionPassed(data);
       
-      bool isSellEligible = m_sell_condition.IsConditionPassed();
+      bool isSellEligible = m_sell_condition.IsConditionPassed(data);
       
       if (isBuyEligible && isSellEligible) {
          printf("[ERROR LOGIC] Buy and sell condition are passed!!!!");

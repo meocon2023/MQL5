@@ -12,20 +12,25 @@
 
 class MeoconStupidStrategy001 : public BaseStrategy
   {
-private:
-      int m_ma_signal_trend_handle;
-      int m_ma_signal_1_handle;
-      int m_ma_signal_2_handle;
-      int m_ma_signal_3_handle;
-      int m_ma_trend_handle;
+   private:
+                     int m_ma_signal_trend_handle;
+                     int m_ma_signal_1_handle;
+                     int m_ma_signal_2_handle;
+                     int m_ma_signal_3_handle;
+                     int m_ma_trend_handle;
+                     
+                     int m_rsi_handle;
+                     int m_ma_rsi_signal_1_handle;
+                     int m_ma_rsi_signal_2_handle;
+                     int m_ma_rsi_signal_3_handle;
+                     int m_ma_rsi_trend_handle;
       
-      int m_rsi_handle;
-      int m_ma_rsi_signal_1_handle;
-      int m_ma_rsi_signal_2_handle;
-      int m_ma_rsi_signal_3_handle;
-      int m_ma_rsi_trend_handle;
+   protected:
+                     void BuildBuyConditions();
+                     void BuildSellCondition();
+      
 
-public:
+   public:
                      //MeoconStupidStrategy001(BaseCondition &buy_condition, BaseCondition &sell_condition);
                      MeoconStupidStrategy001(int ma_signal_trend_handle, int ma_signal_1_handle, int ma_signal_2_handle, int ma_signal_3_handle, int ma_trend_handle,       int rsi_handle, int ma_rsi_signal_1_handle, int ma_rsi_signal_2_handle, int ma_rsi_signal_3_handle, int ma_rsi_trend_handle);
                     ~MeoconStupidStrategy001();
@@ -52,13 +57,9 @@ public:
       m_ma_rsi_signal_3_handle = ma_rsi_signal_3_handle;
       m_ma_rsi_trend_handle = ma_rsi_trend_handle;
 
-      CArrayObj *buy_conditions = new CArrayObj;
-      buy_conditions.Add(new IndicatorsComparator(m_ma_signal_2_handle, m_ma_signal_3_handle,1,100000));
-      m_buy_condition = new AndCondition(buy_conditions);
+
       
-      CArrayObj *sell_conditions = new CArrayObj;
-      sell_conditions.Add(new IndicatorsComparator(m_ma_signal_3_handle, m_ma_signal_2_handle,1,100000));
-      m_sell_condition = new AndCondition(sell_conditions);
+
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -67,3 +68,50 @@ MeoconStupidStrategy001::~MeoconStupidStrategy001()
   {
   }
 //+------------------------------------------------------------------+
+
+void MeoconStupidStrategy001::BuildBuyConditions() {
+      CArrayObj *buy_conditions = new CArrayObj;
+      //Range range={-1,1};
+      //buy_conditions.Add(new IndicatorsComparator(m_ma_signal_2_handle, m_ma_signal_3_handle,1, range ));
+      
+      // Setup RSI buy conditions
+      
+      // ma_rsi_signal 2
+      Range ma_rsi_signal_2_vs_rsi_trend_range = {0.1, 5};
+      buy_conditions.Add(new IndicatorsComparator(m_ma_rsi_signal_2_handle, m_ma_rsi_trend_handle,1, ma_rsi_signal_2_vs_rsi_trend_range));
+      
+      // ma_rsi_signal 3
+      Range ma_rsi_signal_3_vs_rsi_trend_range = {0.1, 3};
+      buy_conditions.Add(new IndicatorsComparator(m_ma_rsi_signal_3_handle, m_ma_rsi_trend_handle,1, ma_rsi_signal_3_vs_rsi_trend_range));
+      
+      //ma_rsi_signal 1 vs ma_rsi_signal 2/3
+       Range ma_rsi_signal_1_vs_ma_rsi_signal_2_3_range = {0.1, 100};
+      buy_conditions.Add(new IndicatorsComparator(m_ma_rsi_signal_1_handle, m_ma_rsi_signal_2_handle,1, ma_rsi_signal_1_vs_ma_rsi_signal_2_3_range));
+      buy_conditions.Add(new IndicatorsComparator(m_ma_rsi_signal_1_handle, m_ma_rsi_signal_3_handle,1, ma_rsi_signal_1_vs_ma_rsi_signal_2_3_range));
+      
+      
+      m_buy_condition = new AndCondition(buy_conditions);
+}
+void MeoconStupidStrategy001::BuildSellCondition() {
+      CArrayObj *sell_conditions = new CArrayObj;
+
+      //Range range={-1,1};
+      //buy_conditions.Add(new IndicatorsComparator(m_ma_signal_2_handle, m_ma_signal_3_handle,1, range ));
+      
+      // Setup RSI buy conditions
+      
+      // ma_rsi_signal 2
+      Range ma_rsi_signal_2_vs_rsi_trend_range = {-5, -0.1};
+      sell_conditions.Add(new IndicatorsComparator(m_ma_rsi_signal_2_handle, m_ma_rsi_trend_handle,1, ma_rsi_signal_2_vs_rsi_trend_range));
+      
+      // ma_rsi_signal 3
+      Range ma_rsi_signal_3_vs_rsi_trend_range = {-3, -0.1};
+      sell_conditions.Add(new IndicatorsComparator(m_ma_rsi_signal_3_handle, m_ma_rsi_trend_handle,1, ma_rsi_signal_3_vs_rsi_trend_range));
+      
+      //ma_rsi_signal 1 vs ma_rsi_signal 2/3
+       Range ma_rsi_signal_1_vs_ma_rsi_signal_2_3_range = {-100, -0.1};
+      sell_conditions.Add(new IndicatorsComparator(m_ma_rsi_signal_1_handle, m_ma_rsi_signal_2_handle,1, ma_rsi_signal_1_vs_ma_rsi_signal_2_3_range));
+      sell_conditions.Add(new IndicatorsComparator(m_ma_rsi_signal_1_handle, m_ma_rsi_signal_3_handle,1, ma_rsi_signal_1_vs_ma_rsi_signal_2_3_range));
+      
+      m_sell_condition = new AndCondition(sell_conditions);
+}

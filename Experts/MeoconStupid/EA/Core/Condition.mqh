@@ -14,7 +14,7 @@ class BaseCondition : public CObject
       public:
                      BaseCondition() {}
                      ~BaseCondition() {}
-                     virtual bool IsConditionPassed() { return false;}
+                     virtual bool IsConditionPassed(ExecutionData &data) { return false;}
   };
 
 class CompoundCondition : public BaseCondition 
@@ -22,7 +22,7 @@ class CompoundCondition : public BaseCondition
    protected:
                      CArrayObj *m_conditions;
    public: 
-                     virtual bool IsConditionPassed() { return false;}
+                     virtual bool IsConditionPassed(ExecutionData &data) { return false;} 
 };
 
 
@@ -31,17 +31,17 @@ class OrCondition: public CompoundCondition
    public:
                      OrCondition(CArrayObj *conditionArr);
                      ~OrCondition() {}
-                     bool IsConditionPassed();
+                     bool IsConditionPassed(ExecutionData &data);
 };
 
 OrCondition::OrCondition(CArrayObj *conditions) {
    m_conditions = conditions;
 }
 
-bool OrCondition::IsConditionPassed() {
+bool OrCondition::IsConditionPassed(ExecutionData &data) {
    for (int i = 0; i < m_conditions.Total(); i++) {
       BaseCondition  *condition = (BaseCondition*) m_conditions.At(i);
-      bool isPassed = condition.IsConditionPassed();
+      bool isPassed = condition.IsConditionPassed(data);
       if (isPassed) {
          return true;
       }
@@ -55,22 +55,23 @@ class AndCondition: public CompoundCondition
    public:
                      AndCondition(CArrayObj *conditionArr);
                      ~AndCondition() {}
-                     bool IsConditionPassed();
+                     bool IsConditionPassed(ExecutionData &data);
 };
 
 AndCondition::AndCondition(CArrayObj *conditions) {
    m_conditions = conditions;
 }
 
-bool AndCondition::IsConditionPassed() {
+bool AndCondition::IsConditionPassed(ExecutionData &data) {
+   bool isPassed = false;
    for (int i = 0; i < m_conditions.Total(); i++) {
       BaseCondition  *condition = (BaseCondition*) m_conditions.At(i);
-      bool isPassed = condition.IsConditionPassed();
+      isPassed = condition.IsConditionPassed(data);
       if (!isPassed) {
          return false;
       }
    }
-   return true;
+   return isPassed;
 }
 
 
