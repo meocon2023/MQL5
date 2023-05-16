@@ -10,6 +10,7 @@
 #include "MeoconStupidStrategy001.mqh"
 #include "..\..\Util\DrawUtils.mqh"
 #include "..\..\Util\CandleUtils.mqh"
+#include "..\..\Util\OrderUtils.mqh"
 
 //+------------------------------------------------------------------+
 //| Expert inputs                                                    |
@@ -29,6 +30,13 @@ input int           ma_rsi_signal_1_period = 9;
 input int           ma_rsi_signal_2_period = 21;
 input int           ma_rsi_signal_3_period = 34;
 input int           ma_rsi_trend_period = 89;
+
+input ulong MAGIC_NUM = 1988;
+// order input
+input int            pips_sl = 20;
+input double         rr = 3;
+input double         lot = 0.01;
+
 
 
 
@@ -167,16 +175,18 @@ void OnTick()
       data.normalized_candle = normalized_candle;
       Decision decided = strategy.Execute(data);
       
-      printf("Process new bar: %s", string(decided));
+    //  printf("Process new bar: %s", string(decided));
       MqlRates rate_buf[];
       CopyRates(_Symbol, time_frame,1, 1, rate_buf);
       switch(decided) {
          case NONE:
          break;
          case BUY:
+            MakeBuyLimit(rate_buf[0], lot, pips_sl, rr);
             DrawArrowUp(rate_buf[0]);
          break;
          case SELL:
+         MakeSellLimit(rate_buf[0], lot, pips_sl, rr);
             DrawArrowDown(rate_buf[0]);
          break;
       }
