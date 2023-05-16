@@ -54,6 +54,7 @@ int           ma_rsi_trend_handle;
 //+------------------------------------------------------------------+
 BaseStrategy *strategy;
 int barTotals;
+NormalizedCandle normalized_candle;
 
 
 //+------------------------------------------------------------------+
@@ -62,6 +63,7 @@ int barTotals;
 int OnInit()
   {
       barTotals = iBars(_Symbol, time_frame);
+      normalized_candle = BuildNormalizedCandle(time_frame, 1, 1000);
       
       int subwindow=(int)ChartGetInteger(0,CHART_WINDOWS_TOTAL);   
       
@@ -101,7 +103,7 @@ int OnInit()
       
       //ChartIndicatorAdd(0, 0, ma_signal_1_handle);
   
-      strategy = new MeoconStupidStrategy001(ma_signal_trend_handle, ma_signal_1_handle, ma_signal_2_handle, ma_signal_3_handle, ma_trend_handle, rsi_handle, ma_rsi_signal_1_handle, ma_rsi_signal_2_handle, ma_rsi_signal_3_handle, ma_rsi_trend_handle);
+      strategy = new MeoconStupidStrategy001(ma_signal_trend_handle, ma_signal_1_handle, ma_signal_2_handle, ma_signal_3_handle, ma_trend_handle, rsi_handle, ma_rsi_signal_1_handle, ma_rsi_signal_2_handle, ma_rsi_signal_3_handle, ma_rsi_trend_handle, time_frame);
 
    return(INIT_SUCCEEDED);
   }
@@ -157,9 +159,10 @@ void OnTick()
       }
       
       // New bars
-      
       barTotals = bars;
-      NormalizedCandle normalized_candle = BuildNormalizedCandle(time_frame, 1, 1000);
+      if (barTotals % 100 == 0) {
+         normalized_candle = BuildNormalizedCandle(time_frame, 1, 1000);
+      }
       ExecutionData data;
       data.normalized_candle = normalized_candle;
       Decision decided = strategy.Execute(data);

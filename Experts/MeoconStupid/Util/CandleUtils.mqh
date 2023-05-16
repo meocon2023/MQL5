@@ -28,6 +28,7 @@
 
 #include "..\Common\Commons.mqh"
 
+/*
 CandleStick RecognizeCandleStick(ENUM_TIMEFRAMES time_frame, int shift) {
 
    NormalizedCandle normalized_candle = BuildNormalizedCandle(time_frame, shift, 1000);
@@ -39,21 +40,31 @@ CandleStick RecognizeCandleStick(ENUM_TIMEFRAMES time_frame, int shift) {
    return candle;
 
 }
-
+*/
 
 NormalizedCandle BuildNormalizedCandle(ENUM_TIMEFRAMES time_frame, int shift, int num) {
 
    MqlRates rates[];
    int count = CopyRates(_Symbol, time_frame, shift, num, rates);
-   double avg_body = 0, avg_length = 0;
+   double avg_body = 0, avg_length = 0, avg_shadow_top = 0, avg_shadow_bottom = 0;
    for (int i = 0; i < count; i++) {
       avg_body += MathAbs(rates[i].close - rates[i].open);
       avg_length += MathAbs(rates[i].high - rates[i].low);
+      if (rates[i].close > rates[i].open) {
+         avg_shadow_top += MathAbs(rates[i].high - rates[i].close);
+         avg_shadow_bottom += MathAbs(rates[i].low - rates[i].open);
+      } else {
+         avg_shadow_top += MathAbs(rates[i].high - rates[i].open);
+         avg_shadow_bottom += MathAbs(rates[i].low - rates[i].close);      
+      }
+      
    }
    avg_body = avg_body / count;
    avg_length = avg_length / count;
+   avg_shadow_top = avg_shadow_top / count;
+   avg_shadow_bottom = avg_shadow_bottom / count;
    
-   NormalizedCandle normalized_candle = {{avg_body,avg_length}, {avg_length,avg_length + avg_body}};
+   NormalizedCandle normalized_candle = {{avg_body,avg_length}, {avg_length,avg_length + avg_body}, avg_length, avg_shadow_top, avg_body, avg_shadow_bottom};
    
    return normalized_candle;
 }

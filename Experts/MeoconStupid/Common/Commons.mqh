@@ -41,7 +41,7 @@ struct Range {
 enum CandleType {
    NONE_CANDLE,
    HAMMER,
-   HANGING_MAN
+   INVERTED_HAMMER
 };
 
 enum CandleColor {
@@ -49,11 +49,17 @@ enum CandleColor {
    RED
 };
 
+enum CrossType {
+   CROSS_UP,
+   CROSS_DOWN
+};
+
 struct CandleTypeDef {
    CandleType candle_type;
    Range shadow_top_percentage_range;
-   Range shadow_bottom_percentage_range;
    Range body_percentage_range;
+   //Range shadow_bottom_percentage_range;
+
 };
 
 struct CandleStruct {
@@ -65,6 +71,7 @@ struct CandleStruct {
    CandleColor candle_color;
 };
 
+/*
 struct CandleStick {
    CandleType candle_type;
    CandleColor candle_color;
@@ -74,13 +81,21 @@ struct CandleStick {
    double shadow_bottom;
    MqlRates rates;
 } ;
-
+*/
 
 struct NormalizedCandle {
    Range body_range;
    Range length_range;
+   double avg_length;
+   double avb_shadow_top;
+   double avg_body;
+   double avg_shadow_bottom;
 };
 
 struct ExecutionData {
    NormalizedCandle normalized_candle;
 };
+
+// Candle type definitions
+CandleTypeDef CANDLE_HAMMER_DEF = { HAMMER, {0,5}, {5,10}};
+CandleTypeDef CANDLE_INVERTED_HAMMER_DEF = { HAMMER, {90,95}, {5,10}};

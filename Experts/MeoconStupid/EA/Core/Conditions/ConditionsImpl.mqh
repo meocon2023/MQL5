@@ -8,6 +8,7 @@
 #property version   "1.00"
 
 #include "..\Condition.mqh"
+#include "..\..\..\Util\CandleUtils.mqh"
 class IndicatorsComparator: public BaseCondition
   {
 private:
@@ -97,6 +98,49 @@ bool MAClosePriceComparator::IsConditionPassed(ExecutionData &data) {
       double dx = minus_buf[0] - close_price;
       
       return dx >= m_range.min && dx <= m_range.max;
+}
+
+//+------------------------------------------------------------------+
+//+------------------------------------------------------------------+
+
+class PriceCrossMAChecker : public BaseCondition {
+   private:
+                     int      m_ma_handle;
+                     ENUM_TIMEFRAMES m_time_frame;
+                     int      m_shift;
+                     CrossType m_cross_type;
+                       
+   protected:
+   
+   public:
+                     PriceCrossMAChecker(int ma_handle,ENUM_TIMEFRAMES time_frame, int shift, CrossType cross_type);
+                    ~PriceCrossMAChecker();
+                    bool IsConditionPassed(ExecutionData &data);
+};
+
+PriceCrossMAChecker::PriceCrossMAChecker(int ma_handle,ENUM_TIMEFRAMES time_frame, int shift, CrossType cross_type) {
+   m_ma_handle = ma_handle;
+   m_time_frame = time_frame;
+   m_shift = shift;
+   m_cross_type = cross_type;
+}
+
+PriceCrossMAChecker::~PriceCrossMAChecker() {}
+
+bool PriceCrossMAChecker::IsConditionPassed(ExecutionData &data) {
+      double ma_buf[];
+      if (CopyBuffer(m_ma_handle,0,m_shift,1,ma_buf) <= 0) {
+         printf("[ERROR][CandleCrossMAChecker][CopyBuffer] could not copybuffer handle:%d", m_ma_handle);
+         return false;
+      }
+      double ma_val = ma_buf[0];
+      CandleStruct cs = GetCandleStruct(m_time_frame, 1);
+      if (m_cross_type == CROSS_UP) {
+         return cs.rates.low <= ma_val && cs.rates.close > ma_val;
+      } else {
+         return cs.rates.high >= ma_val && cs.rates.close < ma_val;
+      }
+
 }
 
 //+------------------------------------------------------------------+
