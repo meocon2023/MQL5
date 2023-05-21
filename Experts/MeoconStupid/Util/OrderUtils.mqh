@@ -28,6 +28,7 @@
 #include<Trade\Trade.mqh>
 
 CTrade trade;
+COrderInfo m_order;
 void MakeBuyLimit(MqlRates &rate,double lot, int pips_sl, double rr) {
    double ask = NormalizeDouble(SymbolInfoDouble(_Symbol, SYMBOL_ASK), _Digits);
    double bid = NormalizeDouble(SymbolInfoDouble(_Symbol, SYMBOL_BID), _Digits);
@@ -78,5 +79,46 @@ void MakeSellLimit(MqlRates &rate,double lot, int pips_sl, double rr) {
    } else {
       printf("[SUCCESS][SELL] symbol:%s, at price: %s, ask: %s, bid: %s", _Symbol, string(desired_buy_price), string(ask), string(bid));
    }
+}
+
+
+bool CountPosition(string count_symbol, ulong magic_num) {
+   int cnt = 0;
+  
+   for(int v = PositionsTotal() - 1; v >= 0; v--)
+     {
+       ulong positionticket = PositionGetTicket(v);
+       ulong  magic=PositionGetInteger(POSITION_MAGIC);
+       string symbol = PositionGetSymbol(v);
+      
+      if(PositionSelectByTicket(positionticket))
+        {
+         if(magic == magic_num && symbol == count_symbol)
+           {
+            
+            cnt ++ ;
+           }
+        }
+     }   
+
+   int ordersCnt = 0;
+   for(int i=OrdersTotal()-1; i>=0; i--) // returns the number of current orders
+   {
+         if(m_order.SelectByIndex(i))     // selects the pending order by index for further access to its properties
+         {
+            if(m_order.Symbol()==count_symbol && m_order.Magic()==magic_num) 
+            
+            {
+               ordersCnt++;
+            }
+         
+         }
+   }
+
+   printf("Symbol:%s, Magic Number: %s, Positions:%d, Pending Orders:%d", count_symbol, string(magic_num), cnt, ordersCnt);
+   
+
+   return cnt;
+
 }
 

@@ -41,7 +41,8 @@ struct Range {
 enum CandleType {
    NONE_CANDLE,
    HAMMER,
-   INVERTED_HAMMER
+   INVERTED_HAMMER,
+   STRONG,
 };
 
 enum CandleColor {
@@ -97,5 +98,6 @@ struct ExecutionData {
 };
 
 // Candle type definitions
-CandleTypeDef CANDLE_HAMMER_DEF = { HAMMER, {0,5}, {5,10}};
-CandleTypeDef CANDLE_INVERTED_HAMMER_DEF = { HAMMER, {90,95}, {5,10}};
+CandleTypeDef CANDLE_HAMMER_DEF = { HAMMER, {0,10}, {5,30}};
+CandleTypeDef CANDLE_INVERTED_HAMMER_DEF = { HAMMER, {65,100}, {5,30}};
+CandleTypeDef CANDLE_STRONG_DEF = {STRONG, {0, 20}, {60, 100}};

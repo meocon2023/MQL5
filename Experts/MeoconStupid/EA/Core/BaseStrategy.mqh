@@ -17,8 +17,7 @@ private:
 protected:
                      BaseCondition *m_buy_condition;
                      BaseCondition *m_sell_condition;
-                     void virtual BuildBuyConditions() {}
-                     void virtual BuildSellCondition() {}
+                     void virtual BuildOrderConditions() {}
                      bool m_setup;
 
 public:
@@ -27,8 +26,7 @@ public:
                     ~BaseStrategy();
                      Decision Execute(ExecutionData &data);
                      void virtual Setup() {
-                        BuildBuyConditions();
-                        BuildSellCondition();
+                        BuildOrderConditions();
                         m_setup = true;
                      }
   };
