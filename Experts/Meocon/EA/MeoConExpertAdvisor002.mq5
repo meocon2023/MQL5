@@ -271,7 +271,6 @@ void Buy(MqlRates &rate) {
    }
    trade.BuyLimit(lot_size,rate.close - avg , _Symbol,rate.close - _Point * 10 * maximum_pips_sl, rate.close + _Point * 10 * maximum_pips_sl * rr,ORDER_TIME_DAY);
 
-
 }
 
 void Sell(MqlRates &rate) {
@@ -281,6 +280,7 @@ void Sell(MqlRates &rate) {
      // trade.SellLimit(lot_size,rate.close + avg, _Symbol,rate.close  + 0.0001 * maximum_pips_sl, rate.close - 0.0001 * maximum_pips_sl * i,ORDER_TIME_DAY);
    }
    trade.SellLimit(lot_size,rate.close + avg , _Symbol,rate.close  + _Point * 10 * maximum_pips_sl, rate.close - _Point * 10 * maximum_pips_sl * rr,ORDER_TIME_DAY);
+
 
 
 }

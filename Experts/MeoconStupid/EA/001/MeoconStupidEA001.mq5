@@ -8,6 +8,8 @@
 #property version   "1.00"
 
 #include "MeoconStupidStrategy001.mqh"
+#include "MeoconStupidStrategy002.mqh"
+#include "MeoconStupidLongTimeFrameStrategy.mqh"
 #include "..\..\Util\DrawUtils.mqh"
 #include "..\..\Util\CandleUtils.mqh"
 #include "..\..\Util\OrderUtils.mqh"
@@ -16,7 +18,7 @@
 //| Expert inputs                                                    |
 //+------------------------------------------------------------------+
 input ENUM_TIMEFRAMES time_frame = PERIOD_M15;
-input ENUM_TIMEFRAMES main_time_frame = PERIOD_H1;
+
 input bool           indicatorEnabled = true;
 
 
@@ -31,6 +33,11 @@ input int           ma_rsi_signal_1_period = 9;
 input int           ma_rsi_signal_2_period = 21;
 input int           ma_rsi_signal_3_period = 34;
 
+// Long Timeframe
+input ENUM_TIMEFRAMES main_time_frame = PERIOD_H1;
+input int h1_ma_signal_period = 34;
+input int h1_ma_trend_period = 89;
+
 input ulong MAGIC_NUM = 1988;
 // order input
 input int            pips_sl = 20;
@@ -39,7 +46,9 @@ input double         lot = 0.01;
 
 input bool buy_enabled = true;
 input bool sell_enabled = true;
-input int positions_limited = 1;
+input int pos_limited = 2;
+
+input STRATYGE strategy = S1;
 
 
 
@@ -48,7 +57,7 @@ input int positions_limited = 1;
 //| Expert handles                                                   |
 //+------------------------------------------------------------------+
 
-// M15 inputs
+// M15 Handle
 
 int           ma_signal_trend_handle = -1;
 int           ma_signal_1_handle = -1;
@@ -61,16 +70,17 @@ int           ma_rsi_signal_1_handle = -1;
 int           ma_rsi_signal_2_handle = -1;
 int           ma_rsi_signal_3_handle = -1;
 
-// H1 Inputs
+// H1 Handle
 int          rsi_h1_handle = -1;
 int          ma_rsi_signal_1_h1_handle = -1;
-int          ma_h1_20 = -1;
-int          ma_h1_50 = -1;
+int          h1_ma_signal_handle = -1;
+int          h1_ma_trend_handle = -1;
 
 //+------------------------------------------------------------------+
 //| Expert global parameters                                         |
 //+------------------------------------------------------------------+
-BaseStrategy *strategy;
+BaseStrategy *strategy1, *strategy2;
+BaseStrategy *long_time_frame_strategy;
 int barTotals;
 NormalizedCandle normalized_candle;
 
@@ -111,8 +121,8 @@ int OnInit()
       ma_signal_trend_handle = iMA(_Symbol, time_frame, ma_signal_trend_period,  0, MODE_SMA, PRICE_CLOSE);
       
       //ma_trend_handle = iMA(_Symbol, main_time_frame, 89,  0, MODE_EMA, PRICE_CLOSE);
-      ma_h1_20 = iMA(_Symbol, main_time_frame, 10,  0, MODE_EMA, PRICE_CLOSE); 
-      ma_h1_50 = iMA(_Symbol, main_time_frame, 50,  0, MODE_EMA, PRICE_CLOSE); 
+      //h1_ma_signal_handle = iMA(_Symbol, main_time_frame, h1_ma_signal_period,  0, MODE_EMA, PRICE_CLOSE); 
+      //h1_ma_trend_handle = iMA(_Symbol, main_time_frame, h1_ma_trend_period,  0, MODE_EMA, PRICE_CLOSE); 
       
    if (indicatorEnabled) {
       ChartIndicatorAdd(0, 0, ma_signal_1_handle);
@@ -120,19 +130,15 @@ int OnInit()
       ChartIndicatorAdd(0, 0, ma_signal_3_handle);
       ChartIndicatorAdd(0, 0, ma_signal_trend_handle);
      //ChartIndicatorAdd(0, 0, ma_trend_handle);
-      ChartIndicatorAdd(0, 0, ma_h1_20);
-      ChartIndicatorAdd(0, 0, ma_h1_50);
+      //ChartIndicatorAdd(0, 0, h1_ma_signal_handle);
+      //ChartIndicatorAdd(0, 0, h1_ma_trend_handle);
      
    }
-   
-   
-
-   
-      
-      //ChartIndicatorAdd(0, 0, ma_signal_1_handle);
   
-      strategy = new MeoconStupidStrategy001(ma_signal_trend_handle, ma_signal_1_handle, ma_signal_2_handle, ma_signal_3_handle, ma_trend_handle, rsi_handle, ma_rsi_signal_1_handle, ma_rsi_signal_2_handle, ma_rsi_signal_3_handle, rsi_h1_handle, ma_rsi_signal_1_h1_handle, time_frame);
+      strategy1 = new MeoconStupidStrategy001(ma_signal_trend_handle, ma_signal_1_handle, ma_signal_2_handle, ma_signal_3_handle, ma_trend_handle, rsi_handle, ma_rsi_signal_1_handle, ma_rsi_signal_2_handle, ma_rsi_signal_3_handle, rsi_h1_handle, ma_rsi_signal_1_h1_handle, time_frame);
+      strategy2 = new MeoconStupidStrategy002(ma_signal_trend_handle, ma_signal_1_handle, ma_signal_2_handle, ma_signal_3_handle, ma_trend_handle, rsi_handle, ma_rsi_signal_1_handle, ma_rsi_signal_2_handle, ma_rsi_signal_3_handle, rsi_h1_handle, ma_rsi_signal_1_h1_handle, time_frame);
 
+      //long_time_frame_strategy = new MeoconStupidLongTimeFrameStrategy(h1_ma_signal_handle, h1_ma_trend_handle, main_time_frame);
    return(INIT_SUCCEEDED);
   }
   
@@ -192,16 +198,35 @@ void OnTick()
       }
       ExecutionData data;
       data.normalized_candle = normalized_candle;
-      Decision decided = strategy.Execute(data);
+      Decision decided = NONE;
+      switch(strategy) {
+         case S1:
+         decided = strategy1.Execute(data);
+         break;
+         case S2:
+         decided = strategy2.Execute(data);
+         break;
+         case AllStrategy:
+         decided = strategy1.Execute(data);
+         if (decided == NONE) {
+            decided = strategy2.Execute(data);
+         }
+         break;
+      }
+      //Decision decided2 = strategy2.Execute(data);
+      
       MqlRates rate_buf[];
       CopyRates(_Symbol, time_frame,1, 1, rate_buf);
       
       DrawSignalIndicator(rate_buf[0], decided);
       
-      int count_positions = CountPosition(_Symbol, MAGIC_NUM);
-      if (count_positions >= positions_limited) {
+      int pos_cnt = CountPosition(_Symbol, MAGIC_NUM);
+      printf("POSSSS:%s, LIMIT:%s", string(pos_cnt), string(pos_limited));
+      if (pos_cnt >= pos_limited) {
          return;
       }
+      
+
 
       switch(decided) {
          case NONE:

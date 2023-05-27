@@ -82,7 +82,7 @@ void MakeSellLimit(MqlRates &rate,double lot, int pips_sl, double rr) {
 }
 
 
-bool CountPosition(string count_symbol, ulong magic_num) {
+int CountPosition(string count_symbol, ulong magic_num) {
    int cnt = 0;
   
    for(int v = PositionsTotal() - 1; v >= 0; v--)

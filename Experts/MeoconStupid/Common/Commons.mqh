@@ -26,6 +26,12 @@
 // #import
 //+------------------------------------------------------------------+
 
+enum STRATYGE {
+   S1,
+   S2,
+   AllStrategy
+};
+
 enum Decision {
    NONE,
    BUY,
