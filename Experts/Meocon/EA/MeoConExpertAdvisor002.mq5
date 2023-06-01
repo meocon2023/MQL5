@@ -210,10 +210,11 @@ bool HasPosition(string checkedSymbol) {
      {
        ulong positionticket = PositionGetTicket(v);
        ulong  magic=PositionGetInteger(POSITION_MAGIC);
+       string symbol = PositionGetSymbol(v);
       
       if(PositionSelectByTicket(positionticket))
         {
-         if(magic ==MAGIC_NUM )
+         if(magic ==MAGIC_NUM && _Symbol == symbol)
            {
             
             cnt ++ ;
