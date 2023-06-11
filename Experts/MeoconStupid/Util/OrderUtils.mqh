@@ -122,3 +122,24 @@ int CountPosition(string count_symbol, ulong magic_num) {
 
 }
 
+//+------------------------------------------------------------------+
+//| Delete After N Bars                                              |
+//+------------------------------------------------------------------+
+void CancelOrderAfterNBars(const int bars, ulong magic_number)
+  {
+   if(bars<1)
+      return;
+   MqlRates rates[];
+   ArraySetAsSeries(rates,true);
+   int start_pos=0,count=bars+1;
+   if(CopyRates(_Symbol, PERIOD_CURRENT,start_pos,count,rates)!=count)
+      return;
+//---
+   for(int i=OrdersTotal()-1; i>=0; i--) // returns the number of current orders
+      if(m_order.SelectByIndex(i))     // selects the pending order by index for further access to its properties
+         if(m_order.Symbol()==_Symbol && m_order.Magic()==magic_number)
+            if(m_order.TimeSetup()<=rates[count-1].time)
+               if(!trade.OrderDelete(m_order.Ticket()))
+                     Print(__FILE__," ",__FUNCTION__,", ERROR: ","CTrade.OrderDelete ",m_order.Ticket());
+  }
+

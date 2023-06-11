@@ -34,6 +34,7 @@ input int           ma_rsi_signal_2_period = 21;
 
 
 input ulong MAGIC_NUM = 2000;
+input int cancel_order_after_candles = 99;
 // order input
 input int            pips_sl = 20;
 input double         rr = 3;
@@ -192,6 +193,9 @@ void OnTick()
       CopyRates(_Symbol, time_frame,1, 1, rate_buf);
       
       DrawSignalIndicator(rate_buf[0], decided);
+      
+      // Cancel order after nbars
+      CancelOrderAfterNBars(cancel_order_after_candles, MAGIC_NUM);
       
       int pos_cnt = CountPosition(_Symbol, MAGIC_NUM);
       printf("POSSSS:%s, LIMIT:%s", string(pos_cnt), string(pos_limited));
