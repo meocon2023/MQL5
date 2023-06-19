@@ -179,4 +179,51 @@ bool IndicatorRangeValueComparator::IsConditionPassed(ExecutionData &data) {
       return val >= m_range.min && val <= m_range.max;
 }
 
+class IndicatorCrossChecker : public BaseCondition {
+   private:
+                     int      m_crossHandle;
+                     int      m_crossedHandle;
+                     int      m_shift;
+                     CrossType    m_cross_type;
+                       
+   protected:
+   
+   public:
+                     IndicatorCrossChecker(int crossHandle, int crossedHandle , int shift, CrossType cross_type);
+                    ~IndicatorCrossChecker();
+                    bool IsConditionPassed(ExecutionData &data);
+};
+
+IndicatorCrossChecker::IndicatorCrossChecker(int crossHandle, int crossedHandle , int shift, CrossType cross_type) {
+   m_crossHandle = crossHandle;
+   m_crossedHandle = crossedHandle;
+   m_shift = shift;
+   m_cross_type = cross_type;
+}
+
+IndicatorCrossChecker::~IndicatorCrossChecker() {}
+
+bool IndicatorCrossChecker::IsConditionPassed(ExecutionData &data) {
+      double cross_val[];
+      double crossed_val[];
+      if (CopyBuffer(m_crossHandle,0,m_shift,2,cross_val) <= 0) {
+         printf("[ERROR][IndicatorRangeValueComparator][CopyBuffer] could not copybuffer handle:%d", m_crossHandle);
+         return false;
+      }
+      
+      if (CopyBuffer(m_crossedHandle,0,m_shift,2,crossed_val) <= 0) {
+         printf("[ERROR][IndicatorRangeValueComparator][CopyBuffer] could not copybuffer handle:%d", m_crossedHandle);
+         return false;
+      }
+
+      if (m_cross_type == CROSS_UP) {
+         return cross_val[0] <= crossed_val[0] && cross_val[1] >= crossed_val[1];
+      } else if (m_cross_type == CROSS_DOWN) {
+         return cross_val[0] >= crossed_val[0] && cross_val[1] <= crossed_val[1];
+      }
+
+      return false;
+}
+
+
 
